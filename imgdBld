@@ -1,0 +1,8 @@
+#!/bin/bash
+
+branchName=`git branch | sed -n '/\* /s///p'`
+ssh root@vdsm "cd /root/git/vdsm-imaged/; git checkout dummy"
+git push -f --all vdsm_dev
+echo "$branchName"
+ssh root@vdsm "cd /root/git/vdsm-imaged/; git checkout $branchName; echo $branchName; python vdsm-imaged" 
+

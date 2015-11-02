@@ -1,0 +1,6 @@
+#!/bin/bash
+#Retrieve branch name:
+cd /home/aaviram/src/git/ovirt-engine/
+branchName=`git branch | sed -n '/\* /s///p'`
+
+$HOME/ovirt-engine_$branchName/bin/engine-setup --jboss-home=/home/aaviram/jboss-as-7.1.1.Final

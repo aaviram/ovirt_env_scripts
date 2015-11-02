@@ -1,0 +1,7 @@
+#!/bin/bash
+#Retrieve branch name:
+cd /home/aaviram/src/git/ovirt-engine/
+branchName=`git branch | sed -n '/\* /s///p'`
+
+echo $HOME/ovirt-engine_$branchName/share/ovirt-engine/services/ovirt-engine/ovirt-engine.py start
+$HOME/ovirt-engine_$branchName/share/ovirt-engine/services/ovirt-engine/ovirt-engine.py start

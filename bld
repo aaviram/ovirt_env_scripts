@@ -1,0 +1,78 @@
+#!/bin/bash
+#Retrieve arguments:
+NO_TESTS=0
+GWT=0
+BP=0
+DEFAULT_DIR=0
+
+while getopts :fgbd opt; do
+  case $opt in
+    d)
+      DEFAULT_DIR=1
+      ;;
+    f)
+      NO_TESTS=1
+      echo "Building WITHOUT tests."
+      ;;
+    g)
+      GWT=1
+      echo "Building GWT."
+      ;;
+    b)
+      BP=1
+      echo "Backporting."
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      ;;
+  esac
+done
+
+if [ "$NO_TESTS" -eq 1 ]; then
+  bldFlags="$bldFlags BUILD_UT=0"
+fi
+
+if [ "$GWT" -eq 1 ]; then
+	bldFlags="$bldFlags DEV_EXTRA_BUILD_FLAGS_GWT_DEFAULTS=\"-Dgwt.userAgent=gecko1_8\" BUILD_GWT_WEBADMIN=\"1\" BUILD_GWT_USERPORTAL=\"0\" DEV_BUILD_GWT_DRAFT=1"
+else
+	bldFlags="$bldFlags BUILD_GWT=0"
+fi
+
+if [ "$BP" -eq 1 ]; then
+	bpPath="-3.6"
+fi
+
+
+#Retrieve branch name:
+cd /home/aaviram/src/git/ovirt-engine/
+branchName=`git branch | sed -n '/\* /s///p'`
+echo "Building $branchName."
+
+if [ "$DEFAULT_DIR" -eq 1 ]; then
+	tmpDir="TMPDIR"
+else
+	tempDir="$branchName"
+fi
+
+
+#Copy WD to temp location. check if it exists
+rm -rf ../tmp
+mkdir ../tmp
+
+if [ -d ../tmp/$tmpDir ]; then
+	rm -rf ../tmp/$tmpDir
+fi
+
+
+COMMAND="make clean install-dev PREFIX=\"$HOME/ovirt-engine$bpPath\" $bldFlags"
+echo "$COMMAND"
+cp -r . ../tmp/$tmpDir/
+cd ../tmp/$tmpDir/
+pwd
+$COMMAND
+
+cd ..
+rm -rf $tmpDir
+
+echo Finished building $branchName.
+
