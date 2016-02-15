@@ -7,9 +7,9 @@ DEFAULT_DIR=0
 CLEAN=1
 tmpDir="TMPDIR"
 
-while getopts :fgn:q opt; do
+while getopts :fgt:q opt; do
   case $opt in
-    n)
+    t)
       tmpDir=$OPTARG
       ;;
     f)

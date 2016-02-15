@@ -1,8 +1,20 @@
 #!/bin/bash
 
+HOST="vdsm"
+while getopts :t: opt; do
+  case $opt in
+    t)
+      HOST=$OPTARG
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      ;;
+  esac
+done
+
 branchName=`git branch | sed -n '/\* /s///p'`
-ssh root@vdsm "cd /root/git/vdsm/; git checkout dummy"
-git push -f --all vdsm_dev
+ssh root@$HOST "cd /root/git/vdsm/; git checkout dummy"
+git push -f --all ssh://root@$HOST/root/git/vdsm/.git
 echo "$branchName"
-ssh root@vdsm "service httpd start; service vdsmd stop; rm -rf /var/www/html/my-vdsm-changes; rm -rf /root/rpmbuild/RPMS/; cd /root/git/vdsm; git checkout $branchName; echo \"$branchName\"; make NOSE_EXCLUDE=.* rpm; mkdir /var/www/html/my-vdsm-changes; cp /root/rpmbuild/RPMS/noarch/* /var/www/html/my-vdsm-changes; cp /root/rpmbuild/RPMS/x86_64/* /var/www/html/my-vdsm-changes; createrepo /var/www/html/my-vdsm-changes; yum clean all; yum  --disablerepo=* --enablerepo=my-vdsm-changes remove vdsm-api vdsm-infra vdsm vdsm-python vdsm-cli vdsm-yajsonrpc -y; yum --disablerepo=* --enablerepo=my-vdsm-changes install vdsm-infra vdsm vdsm-python vdsm-cli vdsm-yajsonrpc -y; vdsm-tool configure --force; service vdsmd start"
+ssh root@$HOST "service httpd start; service vdsmd stop; rm -rf /var/www/html/my-vdsm-changes; rm -rf /root/rpmbuild/RPMS/; cd /root/git/vdsm; git checkout $branchName; echo \"$branchName\"; make NOSE_EXCLUDE=.* rpm; mkdir /var/www/html/my-vdsm-changes; cp /root/rpmbuild/RPMS/noarch/* /var/www/html/my-vdsm-changes; cp /root/rpmbuild/RPMS/x86_64/* /var/www/html/my-vdsm-changes; createrepo /var/www/html/my-vdsm-changes; yum clean all; yum  --disablerepo=* --enablerepo=my-vdsm-changes remove vdsm-api vdsm-infra vdsm vdsm-python vdsm-cli vdsm-yajsonrpc -y; yum --disablerepo=* --enablerepo=my-vdsm-changes install vdsm-infra vdsm vdsm-python vdsm-cli vdsm-yajsonrpc -y; vdsm-tool configure --force; service vdsmd start"
 
