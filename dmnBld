@@ -1,0 +1,19 @@
+#!/bin/bash
+
+HOST="vdsm"
+while getopts :t: opt; do
+  case $opt in
+    t)
+      HOST=$OPTARG
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      ;;
+  esac
+done
+
+branchName=`git branch | sed -n '/\* /s///p'`
+ssh root@$HOST "cd /root/git/ovirt-imageio/; git checkout dummy"
+git push -f --all ssh://root@$HOST/root/git/ovirt-imageio/.git
+echo "$branchName"
+ssh root@$HOST "service httpd start; rm -rf /var/www/html/my-imageio-changes; cd /root/git/ovirt-imageio; git checkout $branchName; echo \"$branchName\"; ./automation/build-artifacts.sh; mkdir /var/www/html/my-imageio-changes; cp exported-artifacts/*.rpm /var/www/html/my-imageio-changes; createrepo /var/www/html/my-imageio-changes; yum clean all; yum  --disablerepo=* --enablerepo=my-imageio-changes remove ovirt-imageio-common -y; yum --disablerepo=* --enablerepo=my-imageio-changes install ovirt-imageio-common -y; sudo -u vdsm ./daemon/ovirt-image-daemon"
